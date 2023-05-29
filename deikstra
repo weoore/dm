@@ -1,0 +1,87 @@
+using System;
+
+public class Solution
+{
+    public static int arg_min(int[] T, bool[] S)
+    {
+        int amin = -1;
+        int m = int.MaxValue;
+        for (int i = 0; i < T.Length; i++)
+        {
+            if (T[i] < m && !S[i])
+            {
+                m = T[i];
+                amin = i;
+            }
+        }
+        return amin;
+    }
+
+    public static void Main()
+    {
+        int[][] D = new int[][]
+        {
+            new int[] { int.MaxValue, 2, 2, int.MaxValue, 7, int.MaxValue, int.MaxValue, int.MaxValue },
+            new int[] { 2, int.MaxValue, 2, 9, 2, int.MaxValue, int.MaxValue, int.MaxValue },
+            new int[] { 2, 2, int.MaxValue, int.MaxValue, 5, int.MaxValue, int.MaxValue, int.MaxValue },
+            new int[] { int.MaxValue, 9, int.MaxValue, int.MaxValue, 10, 5, 2, 16 },
+            new int[] { 7, 2, 2, 10, int.MaxValue, int.MaxValue, 9, int.MaxValue },
+            new int[] { int.MaxValue, int.MaxValue, int.MaxValue, 5, int.MaxValue, int.MaxValue, int.MaxValue, 17 },
+            new int[] { int.MaxValue, int.MaxValue, int.MaxValue, 2, 9, int.MaxValue, int.MaxValue, 17 },
+            new int[] { int.MaxValue, int.MaxValue, int.MaxValue, 16, int.MaxValue, 17, 17, int.MaxValue }
+        };
+        int N = D.Length;
+        int[] T = new int[N];
+        bool[] S = new bool[N];
+        int[] M = new int[N];
+
+        int v = 0;
+        S[v] = true;
+        for (int i = 0; i < N; i++)
+        {
+            T[i] = D[v][i];
+            if (i != v && T[i] != int.MaxValue)
+            {
+                M[i] = v;
+            }
+        }
+
+        while (true)
+        {
+            v = arg_min(T, S);
+            if (v == -1)
+            {
+                break;
+            }
+            S[v] = true;
+
+            for (int i = 0; i < N; i++)
+            {
+                if (D[v][i] != int.MaxValue)
+                {
+                    int w = T[v] + D[v][i];
+                    if (w < T[i])
+                    {
+                        T[i] = w;
+                        M[i] = v;
+                    }
+                }
+            }
+        }
+
+        int start = 0;
+        int end = 4;
+        int[] P = new int[] { end };
+        while (end != start)
+        {
+            end = M[P[P.Length - 1]];
+            Array.Resize(ref P, P.Length + 1);
+            P[P.Length - 1] = end;
+        }
+
+        Array.Reverse(P);
+        int shortestPathLength = T[P[0]];
+        Console.WriteLine("кратчайший путь: " + string.Join(" -> ", P));
+        Console.WriteLine("длина: " + shortestPathLength);
+    }
+}
