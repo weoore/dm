@@ -1,0 +1,48 @@
+using System;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        double[][] C = new double[][] {
+            new double[] { double.PositiveInfinity, 1, double.PositiveInfinity, double.PositiveInfinity, 3 },
+            new double[] { double.PositiveInfinity, double.PositiveInfinity, 8, 7, 1 },
+            new double[] { double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity, 1, -5 },
+            new double[] { double.PositiveInfinity, double.PositiveInfinity, 2, double.PositiveInfinity, double.PositiveInfinity },
+            new double[] { double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity, 4, double.PositiveInfinity }
+        };
+
+        int n = C.Length;
+        double[][] d = new double[n][];
+
+        for (int i = 0; i < n; i++)
+        {
+            d[i] = new double[n];
+            Array.Fill(d[i], double.PositiveInfinity);
+        }
+
+        for (int i = 0; i < n; i++)
+        {
+            d[i][i] = 0;
+        }
+
+        for (int k = 0; k < n; k++)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    if (d[i][k] + C[k][j] < d[i][j])
+                    {
+                        d[i][j] = d[i][k] + C[k][j];
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < n; i++)
+        {
+            Console.WriteLine(string.Join(" ", d[i]));
+        }
+    }
+}
