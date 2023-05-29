@@ -1,48 +1,61 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 class Program
 {
+
     static void Main(string[] args)
     {
-        List<List<double>> G = new List<List<double>>()
-        {
-            new List<double> { double.PositiveInfinity, 2, 2, double.PositiveInfinity, 7, double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity },
-            new List<double> { 2, double.PositiveInfinity, 2, 9, 2, double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity },
-            new List<double> { 2, 2, double.PositiveInfinity, double.PositiveInfinity, 5, double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity },
-            new List<double> { double.PositiveInfinity, 9, double.PositiveInfinity, double.PositiveInfinity, 10, 5, 2, 16 },
-            new List<double> { 7, 2, 2, 10, double.PositiveInfinity, double.PositiveInfinity, 9, double.PositiveInfinity },
-            new List<double> { double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity, 5, double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity, 17 },
-            new List<double> { double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity, 2, 9, double.PositiveInfinity, double.PositiveInfinity, 17 },
-            new List<double> { double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity, 16, double.PositiveInfinity, 17, 17, double.PositiveInfinity }
+        int answer = 0;
+        const int INF = 9999999;
+        const int V = 8;
+        int[,] G = new int[V, V] {
+            {0,2,2,0,7,0,0,0},
+            {2,0,2,9,2,0,0,0},
+            {2,2,0,0,5,0,0,0},
+            {0,9,0,0,10,5,2,16},
+            {7,2,5,10,0,0,9,0},
+            {0,0,0,5,0,0,0,17},
+            {0,0,0,2,9,0,0,17},
+            {0,0,0,16,0,17,17,0},
         };
+        int no_edge;
+        bool[] selected = new bool[V];
 
-        int n = G.Count;
-        HashSet<int> V = new HashSet<int>(Enumerable.Range(0, n));
-        HashSet<int> U = new HashSet<int> { V.First() };
+        Array.Fill(selected, false);
 
-        List<Tuple<double, int, int>> mst = new List<Tuple<double, int, int>>();
-        while (V.Count > 0)
+        no_edge = 0;
+        selected[0] = true;
+
+        int x;
+        int y;
+
+        while (no_edge < V - 1)
         {
-            List<Tuple<double, int, int>> E = new List<Tuple<double, int, int>>();
-            foreach (int uValue in U)
+            int min = INF;
+            x = 0;
+            y = 0;
+
+            for (int i = 0; i < V; i++)
             {
-                foreach (int vValue in V)
+                if (selected[i])
                 {
-                    E.Add(new Tuple<double, int, int>(G[vValue][uValue], vValue, uValue));
+                    for (int j = 0; j < V; j++)
+                    {
+                        if (!selected[j] && G[i, j] != 0)
+                        {
+                            if (min > G[i, j])
+                            {
+                                min = G[i, j];
+                                x = i;
+                                y = j;
+                            }
+                        }
+                    }
                 }
             }
-            Tuple<double, int, int> minEdge = E.Min();
-            double e = minEdge.Item1;
-            int v = minEdge.Item2;
-            int u = minEdge.Item3;
-            mst.Add(new Tuple<double, int, int>(e, v, u));
-            U.Add(v);
-            V.Remove(v);
-        }
 
-        double sum = mst.Sum(tuple => tuple.Item1);
-        Console.WriteLine(sum);
+            answer += G[x, y];
+            selected[y] = true;
+            no_edge++;
+        }
+        Console.WriteLine(answer);
     }
 }
