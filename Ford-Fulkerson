@@ -1,0 +1,122 @@
+using System;
+using System.Linq;
+
+class Program
+{
+    static int GetMaxVertex(int sourceVertex, int[][][] graph, int[] visitedVertices)
+    {
+        int maxVertex = -1;
+        int maxCapacity = 0;
+
+        for (int i = 0; i < graph[sourceVertex].Length; i++)
+        {
+            if (visitedVertices.Contains(i))
+                continue;
+
+            int capacity = graph[sourceVertex][i][0];
+            int reverseCapacity = graph[sourceVertex][i][1];
+            int direction = graph[sourceVertex][i][2];
+
+            int currentCapacity = direction == 1 ? capacity : reverseCapacity;
+
+            if (currentCapacity > maxCapacity)
+            {
+                maxCapacity = currentCapacity;
+                maxVertex = i;
+            }
+        }
+
+        return maxVertex;
+    }
+
+    static int GetMaxFlow(int[][] routeLabels)
+    {
+        int[] weights = new int[routeLabels.Length];
+        for (int i = 0; i < routeLabels.Length; i++)
+            weights[i] = routeLabels[i][0];
+        return weights.Min();
+    }
+
+    static void UpdateGraph(int[][][] graph, int[][] routeLabels, int flow)
+    {
+        foreach (int[] label in routeLabels)
+        {
+            if (label[1] == -1)
+                continue;
+
+            int direction = graph[label[2]][label[1]][2];
+
+            graph[label[2]][label[1]][0] -= flow * direction;
+            graph[label[2]][label[1]][1] += flow * direction;
+
+            graph[label[1]][label[2]][0] -= flow * direction;
+            graph[label[1]][label[2]][1] += flow * direction;
+        }
+    }
+
+    static void Main(string[] args)
+    {
+        int[][][] graph = new int[][][]
+        {
+            new int[][] { new int[] { 0, 0, 1 }, new int[] { 20, 0, 1 }, new int[] { 30, 0, 1 }, new int[] { 10, 0, 1 }, new int[] { 0, 0, 1 } },
+            new int[][] { new int[] { 20, 0, -1 }, new int[] { 0, 0, 1 }, new int[] { 40, 0, 1 }, new int[] { 0, 0, 1 }, new int[] { 30, 0, 1 } },
+            new int[][] { new int[] { 30, 0, -1 }, new int[] { 40, 0, -1 }, new int[] { 0, 0, 1 }, new int[] { 10, 0, 1 }, new int[] { 20, 0, 1 } },
+            new int[][] { new int[] { 10, 0, -1 }, new int[] { 0, 0, 1 }, new int[] { 10, 0, -1 }, new int[] { 0, 0, 1 }, new int[] { 20, 0, 1 } },
+            new int[][] { new int[] { 0, 0, 1 }, new int[] { 30, 0, -1 }, new int[] { 20, 0, -1 }, new int[] { 20, 0, -1 }, new int[] { 0, 0, 1 } }
+        };
+
+        int numberOfVertices = graph.Length;
+        int sourceVertex = 0;
+        int sinkVertex = 4;
+        int[] initialRouteLabel = new int[] { int.MaxValue, -1, sourceVertex };
+        int[] maximumFlows = new int[0];
+
+        int currentVertex = sourceVertex;
+        while (currentVertex != -1)
+        {
+            int startingVertex = sourceVertex;
+            int[][] routeLabels = new int[][] { initialRouteLabel };
+            int[] visitedVertices = new int[] { sourceVertex };
+
+            while (startingVertex != sinkVertex)
+            {
+                currentVertex = GetMaxVertex(startingVertex, graph, visitedVertices);
+
+                if (currentVertex == -1)
+                {
+                    if (startingVertex == sourceVertex)
+                        break;
+                    else
+                    {
+                        startingVertex = routeLabels[routeLabels.Length - 1][2];
+                        Array.Resize(ref routeLabels, routeLabels.Length - 1);
+                        continue;
+                    }
+                }
+
+                int currentFlow = graph[startingVertex][currentVertex][0] == 1 ? graph[startingVertex][currentVertex][0] : graph[startingVertex][currentVertex][1];
+                Array.Resize(ref routeLabels, routeLabels.Length + 1);
+                routeLabels[routeLabels.Length - 1] = new int[] { currentFlow, currentVertex, startingVertex };
+                Array.Resize(ref visitedVertices, visitedVertices.Length + 1);
+                visitedVertices[visitedVertices.Length - 1] = currentVertex;
+
+                if (currentVertex == sinkVertex)
+                {
+                    Array.Resize(ref maximumFlows, maximumFlows.Length + 1);
+                    maximumFlows[maximumFlows.Length - 1] = GetMaxFlow(routeLabels);
+                    UpdateGraph(graph, routeLabels, maximumFlows[maximumFlows.Length - 1]);
+                    break;
+                }
+
+                startingVertex = currentVertex;
+            }
+            if (currentVertex == sourceVertex)
+                break;
+        }
+
+        int maximumFlow = 0;
+        foreach (int flow in maximumFlows)
+            maximumFlow += flow;
+        Console.WriteLine(maximumFlow);
+    }
+}
