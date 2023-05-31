@@ -1,0 +1,100 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+class Program
+{
+    static double MinG(List<List<double>> G, int inp)
+    {
+        int n = G.Count;
+        return G.Select(line => line[inp]).Min();
+    }
+
+    static void Main(string[] args)
+    {
+        List<List<double>> G = new List<List<double>>()
+        {
+            new List<double> { double.PositiveInfinity, 12, 22, 28, 32 },
+            new List<double> { 12, double.PositiveInfinity, 10, 40, 20 },
+            new List<double> { 22, 10, double.PositiveInfinity, 50, 10 },
+            new List<double> { 28, 27, 17, double.PositiveInfinity, 27 },
+            new List<double> { 32, 20, 10, 60, double.PositiveInfinity }
+        };
+
+        Console.WriteLine("Input matrix:");
+        PrintMatrix(G);
+
+        int count = 0;
+        for (int num = 0; num < G.Count - 2; num++)
+        {
+            Console.WriteLine($"\nIteration №{num + 1}");
+            int n = G.Count;
+
+            for (int i = 0; i < n; i++)
+            {
+                double minLine = G[i].Min();
+                if (minLine != double.PositiveInfinity)
+                {
+                    count += (int)minLine;
+                    for (int j = 0; j < n; j++)
+                    {
+                        G[i][j] -= minLine;
+                    }
+                }
+            }
+            Console.WriteLine("Matrix after subtracting minimum value from each row:");
+            PrintMatrix(G);
+            Console.WriteLine();
+
+            for (int j = 0; j < n; j++)
+            {
+                double minRow = MinG(G, j);
+                if (minRow != double.PositiveInfinity)
+                {
+                    count += (int)minRow;
+                    for (int i = 0; i < n; i++)
+                    {
+                        G[i][j] -= minRow;
+                    }
+                }
+            }
+            Console.WriteLine("Matrix after subtracting minimum value from each column:");
+            PrintMatrix(G);
+            Console.WriteLine("Total Cost: " + count);
+
+            List<(double, int, int)> zeros = new List<(double, int, int)>();
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    if (G[i][j] == 0.0)
+                    {
+                        G[i][j] = double.PositiveInfinity;
+                        zeros.Add((MinG(G, j) + MinG(G, i), i, j));
+                        G[i][j] = 0.0;
+                    }
+                }
+            }
+            (double, int, int) maxZero = zeros.Max();
+            int u = maxZero.Item2;
+            int v = maxZero.Item3;
+            G[u][v] = double.PositiveInfinity;
+            for (int x = 0; x < n; x++)
+            {
+                G[x][u] = double.PositiveInfinity;
+                G[v][x] = double.PositiveInfinity;
+            }
+            Console.WriteLine("Matrix after eliminating a row and column:");
+            PrintMatrix(G);
+        }
+    }
+
+    static void PrintMatrix(List<List<double>> matrix)
+    {
+        foreach (List<double> row in matrix)
+        {
+            Console.WriteLine(string.Join("\t", row.Select(d => d == double.PositiveInfinity ? "inf" : d.ToString())));
+        }
+    }
+}
